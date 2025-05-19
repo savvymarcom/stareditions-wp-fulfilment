@@ -13,50 +13,53 @@ class OrderMetaFields {
         $this->savvyPluginConfig = $savvyPluginConfig;
         $this->brandName         = $this->savvyPluginConfig->getSavvyBrandName();
 
-        // WooCommerce’s internal screen ID for the Orders page:
-        $screen = function_exists( 'wc_get_page_screen_id' )
-            ? wc_get_page_screen_id( 'shop-order' )
-            : 'woocommerce_page_wc-orders';
-
-        // Hook only on that screen, passing WP_Screen + the $order object
-        add_action(
-            "add_meta_boxes_{$screen}",
-            [ $this, 'addOrderPageMetaBox' ],
-            10,
-            2
-        );
+        // hook into the general meta-box registration
+        add_action( 'add_meta_boxes', [ $this, 'addOrderPageMetaBox' ] );
     }
 
     /**
-     * Register the meta box on the edit‐order screen.
-     *
-     * @param \WP_Screen $screen Current admin screen object
-     * @param WC_Order   $order  The order being edited
+     * Fire on every screen; bail unless we're on the WC 'edit order' page.
      */
-    public function addOrderPageMetaBox( $screen, $order ) {
+    public function addOrderPageMetaBox(): void {
+        // determine the WC order-edit screen ID
+        $wc_screen = function_exists( 'wc_get_page_screen_id' )
+            ? wc_get_page_screen_id( 'shop-order' )           // e.g. 'woocommerce_page_wc-orders'
+            : 'woocommerce_page_wc-orders';
+
+        // bail if we're not on that screen
+        if ( ! function_exists( 'get_current_screen' ) ) {
+            return;
+        }
+        $screen = get_current_screen();
+        if ( ! $screen || $screen->id !== $wc_screen ) {
+            return;
+        }
+
+        // now register our box
         add_meta_box(
             'savvy_web_order_tracking',
             sprintf( '%s Order Tracking', esc_html( $this->brandName ) ),
             [ $this, 'renderSavvyTrackingMetaBox' ],
-            $screen->id,   // e.g. 'woocommerce_page_wc-orders'
-            'side',
-            'high'
+            $wc_screen,  // show on this screen
+            'side',      // context
+            'high'       // priority
         );
     }
 
     /**
-     * Output our custom tracking/status info.
+     * Render the contents of our Order Tracking box.
      *
-     * @param WC_Order $order The current order object
+     * @param \WP_Post $post
      */
-    public function renderSavvyTrackingMetaBox( WC_Order $order ): void {
-        // sanity check
+    public function renderSavvyTrackingMetaBox( $post ): void {
+        $order = wc_get_order( $post->ID );
+
         if ( ! $order instanceof WC_Order ) {
             echo '<p><em>Order not found.</em></p>';
             return;
         }
 
-        // Always use getters!
+        // get all our meta via getters
         $status       = $order->get_meta( '_savvy_fulfilment_status', true ) ?: 'Not Sent';
         $lastAttempt  = $order->get_meta( '_savvy_fulfilment_last_attempt', true );
         $errorMessage = $order->get_meta( '_savvy_fulfilment_error_message', true );
@@ -71,8 +74,6 @@ class OrderMetaFields {
 
         if ( $errorMessage ) {
             echo '<p style="color:red;"><strong>Error:</strong><br>' . esc_html( $errorMessage ) . '</p>';
-
-            // Proper concatenation rather than in‐string interpolation
             $resendUrl = admin_url(
                 'admin-post.php?action=savvy_resend_fulfilment&order_id=' . $order->get_id()
             );
