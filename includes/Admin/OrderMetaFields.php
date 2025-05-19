@@ -2,9 +2,6 @@
 
 namespace SavvyWebFulfilment\Admin;
 
-use WP_Post;
-use WC_Order;
-
 class OrderMetaFields
 {
     private SavvyPluginConfig $savvyPluginConfig;
@@ -29,28 +26,28 @@ class OrderMetaFields
             "{$this->brandName} Order Tracking",
             [$this, 'renderSavvyTrackingMetaBox'],
             $screen,
-            'side', 
+            'side',
             'high'
         );
-
     }
 
-    public function renderSavvyTrackingMetaBox(WP_Post $post)
+    public function renderSavvyTrackingMetaBox($post)
     {
         
         $order = wc_get_order($post->ID);
 
-        if ( ! $order instanceof WC_Order ) {
+        if (!$order) {
             echo '<p><em>Order not found.</em></p>';
             return;
         }
 
-        $status         = $order->get_meta('_savvy_fulfilment_status', true) ?: 'Not Sent';
-        $last_attempt   = $order->get_meta('_savvy_fulfilment_last_attempt', true);
-        $error          = $order->get_meta('_savvy_fulfilment_error_message', true);
-        $tracking       = $order->get_meta('_savvy_fulfilment_tracking_number', true);
-        $carrier        = $order->get_meta('_savvy_fulfilment_carrier', true);
+        $status = $order->get_meta('_savvy_fulfilment_status', true) ?: 'Not Sent';
+        $last_attempt = $order->get_meta('_savvy_fulfilment_last_attempt', true);
+        $error = $order->get_meta('_savvy_fulfilment_error_message', true);
+        $tracking = $order->get_meta('_savvy_fulfilment_tracking_number', true);
+        $carrier = $order->get_meta('_savvy_fulfilment_carrier', true);
         
+
         echo "<p><strong>Status:</strong> " . esc_html(ucfirst($status)) . "</p>";
 
         if ($last_attempt) {
