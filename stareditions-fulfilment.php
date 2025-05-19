@@ -2,7 +2,7 @@
 /**
  * Plugin Name:     Star Editions Fulfilment
  * Description:     Custom fulfilment integration for Star Editions.
- * Version:         1.3.30
+ * Version:         1.3.31
  * Author:          SavvyWeb Solutions
  */
 
