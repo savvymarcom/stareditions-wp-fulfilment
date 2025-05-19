@@ -15,32 +15,24 @@ class OrderMetaFields
         $this->savvyPluginConfig = $savvyPluginConfig;
         $this->brandName = $this->savvyPluginConfig->getSavvyBrandName();
 
-        //add_action('add_meta_boxes', [$this, 'addOrderPageMetaBox']);
-        add_action( 'add_meta_boxes_shop_order', [ $this, 'addOrderPageMetaBox' ] );
+        add_action('add_meta_boxes', [$this, 'addOrderPageMetaBox']);
     }
 
     public function addOrderPageMetaBox()
     {
-        // $screen = function_exists('wc_get_page_screen_id')
-        //     ? wc_get_page_screen_id('shop-order')
-        //     : 'shop_order';
+        $screen = function_exists('wc_get_page_screen_id')
+            ? wc_get_page_screen_id('shop-order')
+            : 'shop_order';
 
-        // add_meta_box(
-        //     'savvy_web_order_tracking',
-        //     "{$this->brandName} Order Tracking",
-        //     [$this, 'renderSavvyTrackingMetaBox'],
-        //     $screen,
-        //     'side', 
-        //     'high'
-        // );
         add_meta_box(
             'savvy_web_order_tracking',
-            sprintf( '%s Order Tracking', esc_html( $this->brandName ) ),
-            [ $this, 'renderSavvyTrackingMetaBox' ],
-            'shop_order',
-            'side',
+            "{$this->brandName} Order Tracking",
+            [$this, 'renderSavvyTrackingMetaBox'],
+            $screen,
+            'side', 
             'high'
         );
+
     }
 
     public function renderSavvyTrackingMetaBox(WP_Post $post)
