@@ -29,7 +29,7 @@ class SavvyPluginConfig
     {
         $this->fulfilmentProviderOptions = [
             'manual' => 'Manual',
-            'stareditions' => 'Star Editions Fulfilment',
+            'star-editions' => 'Star Editions Fulfilment',
         ];
     }
 
