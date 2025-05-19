@@ -62,6 +62,10 @@ class CallbackHandler
         }
 
         if ($status === 'fulfilled') {
+            error_log( sprintf(
+                '[SavvyWebPlugin] 📨 Sending fulfilment email for order #%d (status=%s, tracking=%s, carrier=%s)',
+                $order->get_id(), $status, $tracking, $carrier
+            ) );
             (new EmailService())->sendFulfilmentStatusUpdateEmail($order->get_id(), $status, $tracking, $carrier);
 
             if ($this->checkOrderItemsToComplete($order) && $order->get_status() !== 'completed') {
@@ -69,7 +73,7 @@ class CallbackHandler
                 $order->add_order_note('✅ Order automatically marked as Completed.');
             }
         }
-        (new EmailService())->sendFulfilmentStatusUpdateEmail($order->get_id(), $status, $tracking, $carrier);
+        
 
         $order->save();
 
