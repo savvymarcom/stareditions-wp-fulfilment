@@ -61,14 +61,14 @@ class CallbackHandler
             $order->add_order_note(implode("\n", $noteLines));
         }
 
-        // if ($status === 'fulfilled') {
-        //     (new EmailService())->sendFulfilmentStatusUpdateEmail($order->get_id(), $status, $tracking, $carrier);
+        if ($status === 'fulfilled') {
+            (new EmailService())->sendFulfilmentStatusUpdateEmail($order->get_id(), $status, $tracking, $carrier);
 
-        //     if ($this->checkOrderItemsToComplete($order) && $order->get_status() !== 'completed') {
-        //         $order->update_status('completed');
-        //         $order->add_order_note('✅ Order automatically marked as Completed.');
-        //     }
-        // }
+            if ($this->checkOrderItemsToComplete($order) && $order->get_status() !== 'completed') {
+                $order->update_status('completed');
+                $order->add_order_note('✅ Order automatically marked as Completed.');
+            }
+        }
         (new EmailService())->sendFulfilmentStatusUpdateEmail($order->get_id(), $status, $tracking, $carrier);
 
         $order->save();
