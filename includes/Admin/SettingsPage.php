@@ -233,15 +233,25 @@ class SettingsPage
             try {
                 // DO NOT call update_option() here
                 $apiService = new \SavvyWebFulfilment\Service\SavvyApiService();
-                $apiService->registerSite();
+                $response = $apiService->registerSite();
 
-                add_action('admin_notices', function () {
-                    echo '<div class="notice notice-success is-dismissible"><p>Successfully registered with SavvyWeb.</p></div>';
-                });
+                if ((isset($response['error']) && $response['error'])){
+
+                    add_action('admin_notices', function () use($response){
+                        echo '<div class="notice notice-error is-dismissible"><p>Failed to register with ' . esc_html($this->brandName) . ': ' . esc_html($response['message']) . '</p></div>';
+                    });
+
+                }else{
+
+                    add_action('admin_notices', function () {
+                        echo '<div class="notice notice-success is-dismissible"><p>Successfully registered with ' . esc_html($this->brandName) . '.</p></div>';
+                    });
+
+                }
 
             } catch (\Throwable $e) {
                 add_action('admin_notices', function () use ($e) {
-                    echo '<div class="notice notice-error"><p><strong>SavvyWeb Registration Failed:</strong> ' . esc_html($e->getMessage()) . '</p></div>';
+                    echo '<div class="notice notice-error"><p><strong>' . $this->brandName . ' Registration Failed:</strong> ' . esc_html($e->getMessage()) . '</p></div>';
                 });
             }
         }

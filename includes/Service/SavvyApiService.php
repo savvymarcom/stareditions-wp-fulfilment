@@ -18,7 +18,7 @@ class SavvyApiService
         return $this->client->post('orders', $orderData, $orderData['order_ref']);
     }
 
-    public function registerSite(): void
+    public function registerSite()
     {
         // $alreadyRegistered = get_option('savvy_web_registered', false);
         // if ($alreadyRegistered) {
@@ -32,14 +32,28 @@ class SavvyApiService
             $response = $this->client->post('wordpress/register', $siteData, 'site-registration');
 
             if (
-                isset($response['updater']['wp_github_user']) &&
-                isset($response['updater']['wp_github_repo'])
-            ) {
-                update_option('savvy_web_updater_user', sanitize_text_field($response['updater']['wp_github_user']));
-                update_option('savvy_web_updater_repo', sanitize_text_field($response['updater']['wp_github_repo']));
+                (isset($response['error']) && $response['error']) || 
+                (isset($response['status']) && $response['status'] === 'error')
+            ){
+                
+                update_option('savvy_web_registered', false);
+                return ['error' => true, 'message' =>  $response['message'] ];
+
+            }else{
+
+                if (
+                    isset($response['updater']['wp_github_user']) &&
+                    isset($response['updater']['wp_github_repo'])
+                ) {
+                    update_option('savvy_web_updater_user', sanitize_text_field($response['updater']['wp_github_user']));
+                    update_option('savvy_web_updater_repo', sanitize_text_field($response['updater']['wp_github_repo']));
+                }
+
+                update_option('savvy_web_registered', true);
+
             }
 
-            update_option('savvy_web_registered', true);
+            
 
         } catch (\Exception $e) {
             error_log('[SavvyWeb] Registration failed: ' . $e->getMessage());
