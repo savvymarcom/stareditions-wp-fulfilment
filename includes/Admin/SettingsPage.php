@@ -213,6 +213,7 @@ class SettingsPage
             <?php
                 settings_fields('savvy_web_fulfilment_group');
                 do_settings_sections('savvy-web-fulfilment');
+                settings_errors('savvy_web_fulfilment_group');
                 submit_button();
             ?>
         </form>
@@ -235,18 +236,20 @@ class SettingsPage
                 $apiService = new \SavvyWebFulfilment\Service\SavvyApiService();
                 $response = $apiService->registerSite();
 
-                if ((isset($response['error']) && $response['error'])){
-
-                    add_action('admin_notices', function () use($response){
-                        echo '<div class="notice notice-error is-dismissible"><p>Failed to register with ' . esc_html($this->brandName) . ': ' . esc_html($response['message']) . '</p></div>';
-                    });
-
-                }else{
-
-                    add_action('admin_notices', function () {
-                        echo '<div class="notice notice-success is-dismissible"><p>Successfully registered with ' . esc_html($this->brandName) . '.</p></div>';
-                    });
-
+                if (isset($response['error']) && $response['error']) {
+                    add_settings_error(
+                        'savvy_web_fulfilment_group',
+                        'registration_failed',
+                        'Failed to register with ' . esc_html($this->brandName) . ': ' . esc_html($response['message']),
+                        'error'
+                    );
+                } else {
+                    add_settings_error(
+                        'savvy_web_fulfilment_group',
+                        'registration_success',
+                        'Successfully registered with ' . esc_html($this->brandName) . '.',
+                        'success'
+                    );
                 }
 
             } catch (\Throwable $e) {
@@ -363,11 +366,25 @@ class SettingsPage
 
         try {
             $apiService = new \SavvyWebFulfilment\Service\SavvyApiService();
-            $apiService->registerSite();
 
-            add_action('admin_notices', function () {
-                echo '<div class="notice notice-success is-dismissible"><p>Successfully registered with SavvyWeb.</p></div>';
-            });
+            $response = $apiService->registerSite();
+
+            if (isset($response['error']) && $response['error']) {
+                add_settings_error(
+                    'savvy_web_fulfilment_group',
+                    'registration_failed',
+                    'Failed to register with ' . esc_html($this->brandName) . ': ' . esc_html($response['message']),
+                    'error'
+                );
+            } else {
+                add_settings_error(
+                    'savvy_web_fulfilment_group',
+                    'registration_success',
+                    'Successfully registered with ' . esc_html($this->brandName) . '.',
+                    'success'
+                );
+            }
+
         } catch (\Throwable $e) {
             add_action('admin_notices', function () use ($e) {
                 echo '<div class="notice notice-error"><p><strong>SavvyWeb Registration Failed:</strong> ' . esc_html($e->getMessage()) . '</p></div>';
