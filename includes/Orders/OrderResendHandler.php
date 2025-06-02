@@ -34,14 +34,31 @@ class OrderResendHandler
 
         try {
             $orderData = (new \SavvyWebFulfilment\Formatter\OrderFormatter())->format($order);
-            (new SavvyApiService())->sendOrder($orderData);
-
-            $order->update_meta_data('_savvy_fulfilment_status', 'sent');
-            $order->update_meta_data('_savvy_fulfilment_last_attempt', current_time('mysql'));
-            $order->update_meta_data('_savvy_fulfilment_error_message', null);
-            $order->save();
-
+            $service = new SavvyApiService();
+            $response = $service->sendOrder($orderData);
             $order->add_order_note("🔁 Order resent to {$this->brandName} Fulfilment.");
+
+            if (
+                (isset($response['error']) && $response['error']) || 
+                (isset($response['status']) && $response['status'] === 'error')
+            ){
+
+                $error = $response['message'];
+                $order->add_order_note("❌ Error sending to {$this->brandName}: {$error}");
+                $order->update_meta_data('_savvy_fulfilment_status', 'error');
+                $order->update_meta_data('_savvy_fulfilment_last_attempt', current_time('mysql'));
+                $order->update_meta_data('_savvy_fulfilment_error_message', $error);
+                $order->save();
+
+            }else{
+
+                $order->update_meta_data('_savvy_fulfilment_status', 'sent');
+                $order->update_meta_data('_savvy_fulfilment_last_attempt', current_time('mysql'));
+                $order->update_meta_data('_savvy_fulfilment_error_message', null);
+                $order->save();
+                $order->add_order_note("🔁 Order resent to {$this->brandName} Fulfilment.");
+
+            }
         } catch (\Throwable $e) {
 
             $error = $e->getMessage();
