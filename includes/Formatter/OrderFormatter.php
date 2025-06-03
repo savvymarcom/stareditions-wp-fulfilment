@@ -75,6 +75,7 @@ class OrderFormatter
             'order_ref' => $order->get_id(),
             'order_placed_at' => $order->get_date_created()->date('Y-m-d H:i:s'),
             'subtotal_price' => $order->get_subtotal(),
+            'total_discount' => $order->get_total_discount(),
             'total_price' => $order->get_total(),
             'financial_status' => "paid",
             'currency' => $order->get_currency(),

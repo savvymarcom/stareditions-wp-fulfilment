@@ -2,12 +2,12 @@
 /**
  * Plugin Name:     Star Editions Fulfilment
  * Description:     Custom fulfilment integration for Star Editions.
- * Version:         1.3.41
+ * Version:         1.3.42
  * Author:          SavvyWeb Solutions
  */
 
 defined('ABSPATH') || exit;
-define('SAVVY_WEB_FULFILMENT_VERSION', '1.0.0');
+define('SAVVY_WEB_FULFILMENT_VERSION', '1.3.42');
 define('SAVVY_WEB_FULFILMENT_FILE', __FILE__);
 
 // Require the autoloader
